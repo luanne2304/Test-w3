@@ -21,7 +21,18 @@ function App(){
   const [account,setAccount]= useState(null)
   const [balance,setBalance]= useState(null)
 
+  async function IsMeta (){
+    const checkMeta =await detectEthereumProvider();
+    if(checkMeta!= null)
+    {
+      web3Api.provider.request({method:"eth_requestAccounts"})
+    }
+    else {
+      alert("Vui lòng thêm extension Metamask")
+    }
+  }
   
+
 
   useEffect(()=>{
     const loadProvider=async ()=> {
@@ -68,7 +79,7 @@ function App(){
         </h3> 
         <button type="button" class="m-2 btn btn-info">Info</button>  
         <button type="button" class="m-2 btn btn-danger">Danger</button>
-        <button onClick={()=> web3Api.provider.request({method:"eth_requestAccounts"})} type="button" class="m-2 btn btn-dark">Dark</button>  
+        <button onClick={IsMeta} type="button" class="m-2 btn btn-dark">Kết lối</button>  
         <span className='d-block '>Address: <strong>{account?account: "Nan"}</strong></span>  
       </div>
     </div>
