@@ -1,15 +1,19 @@
 import React from "react";
 
-export const Transitem =(transaction)=>{
+export const Transitem =({transactions})=>{
     return (
-        <tr>
+        <React.Fragment>
+        {transactions.map(item => (
+        <tr key={item.id}>
             <strong>#</strong>
-            <p>Hash:{transaction.hash}</p>                  
-            <p>From: {transaction.from}</p>
-            <p>To:{transaction.to}</p>
-            <p>Gas: {transaction.gas}</p>
-            <p>Value: {transaction.value}</p>
+            <p>Hash:{item.hash}</p>                  
+            <p>From: {item.from}</p>
+            <p>To:{item.to}</p>
+            <p>Gas: {item.gas.toString() }</p>
+            <p>Value: {item.value.toString()}</p>
         </tr>
+        ))}
+        </React.Fragment>
     )
 } 
 

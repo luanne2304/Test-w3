@@ -13,22 +13,19 @@ function App(){
     contract:null,
   })
 
-  // const[transInfo,setTransInfo ]= useState({
-  //   rfrom: "",
-  //   rto:"",
-  //   rgasused:"",
-  //   rvalue:"",
-  //   rtransactionhash:"",
-  // })
+  const [reloadTransitem, setReloadTransitem] = useState(false);
 
-  const[ListtransInfo, setListTransInfo]= useState([])
+  // Hàm để "load lại" component
+  const reloadComponent = () => {
+    setReloadTransitem(prevState => !prevState);
+  };
+
+
+  const [listTransInfoUs,setlistTransInfoUs] = useState([])
 
 
   const [account,setAccount]= useState(null)
   const [balance,setBalance]= useState(null)
-
-  const [shouldReload, reload] = useState(false);
-  const reloadEffect = () => reload(!shouldReload)
 
 
   const loadBalance = async () => {
@@ -90,9 +87,38 @@ function App(){
 
   }
    
-  function test(){
-    console.log()
+  async function showlisttrans(){
+    try {
+      const response = await axios.get('http://localhost:5000/getTransbyID',{
+        params: {
+          Address: account
+        }
+      });
+      const data = response.data; // Lấy dữ liệu từ response
+      
+      const listtransHash =data.return
+      const tempListTransInfo = await Promise.all(
+        listtransHash.map(async item => {
+          return await web3Api.web3.eth.getTransaction(item);
+        })
+      );
+  
+      // Lưu trữ giá trị mới của listTransInfoUs vào biến tạm thời
+      setlistTransInfoUs(tempListTransInfo);
+  
+      // Cập nhật state reloadTransitem
+      setReloadTransitem(prevState => !prevState);
+    } catch (error) {
+      console.error('Error:', error);
+      // Xử lý lỗi tại đây
+
+    }
   }
+
+  function test(){
+    
+  }
+
 
   useEffect(()=>{
     const loadProvider=async ()=> {
@@ -113,12 +139,13 @@ function App(){
     loadProvider()
   },[])
 
+
   useEffect(()=>{
     const getAccount = async ()=>{
       
       const accounts= await web3Api.web3.eth.getAccounts() 
       setAccount(accounts[0])
-   
+      
     }
     web3Api.web3 && getAccount() 
   },[web3Api.web3]);
@@ -145,9 +172,9 @@ function App(){
             <input type="text" name='amount' class="form-control"></input>
           </div>
           <button onClick={Trans} type="button" class="m-2 btn btn-info">Gửi</button>  
-
+          
           <button onClick={test} type="button" class="m-2 btn btn-info">Test</button> 
-          <button  type="button" class="m-2 btn btn-danger" data-bs-toggle="modal" data-bs-target="#myModal">Lịch sử</button>
+          <button onClick={showlisttrans} type="button" class="m-2 btn btn-danger" data-bs-toggle="modal" data-bs-target="#myModal">Lịch sử</button>
           <button onClick={IsMeta} type="button" class="m-2 btn btn-dark">Kết lối</button>  
           <span className='d-block '>Address: <strong>{account?account: "Nan"}</strong></span>  
         </div>
@@ -159,7 +186,7 @@ function App(){
 
 
             <div class="modal-header">
-              <h4 class="modal-title">Lịch sự giao dịch</h4>
+              <h4 class="modal-title">Lịch sử giao dịch</h4>
               <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
 
@@ -167,22 +194,9 @@ function App(){
             <div class="modal-body">
               <table variant="simple">
                 <thead>
-                  <th>
-                    Các giao dịch thành công
-                  </th>
                 </thead>
                 <tbody>
-                  {ListtransInfo.map((transInfoitem, index) => (
-                      <Transitem key={index} transaction={transInfoitem} />
-                  ))}
-                  {/* <tr>
-                      <strong>#</strong>
-                      <p>Hash: 0x1d77cc5fc0b7af10a8711e93ae794d9895ec359a135246f25d8edf889f29fd05</p>                  
-                      <p>From: 0x6E9918f26732C10f2C1fbB754506AF0B4700403C</p>
-                      <p>To: 0x953A69BA6Dbc5a98b4CeCEdA7161cC2e4534E26a</p>
-                      <p>Gas: 21000</p>
-                      <p>Value: 3.0 ETH</p>
-                  </tr> */}
+                    <Transitem  transactions={listTransInfoUs} />
                 </tbody>
               </table>
             </div>
